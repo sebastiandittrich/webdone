@@ -1,0 +1,509 @@
+:root {
+    --theme-color: #45547c;
+    --light-shadow: drop-shadow(0px 0px 2px rgba(0,0,0,0.2));
+    --white-gradient: linear-gradient(-45deg, #efefef, white);
+    --light-white-gradient: linear-gradient(-45deg, #fdfdfd, white);
+}
+
+.red {
+    color: red !important;
+}
+
+.blue {
+    color: var(--theme-color);
+}
+
+body {
+    font-family: Segoe, sans-serif;
+    background-color: #e6e6e6;
+    margin: 0px;
+    transition: margin-top 2000ms ease-out;
+}
+
+body.popupped {
+    overflow: hidden;
+}
+
+body.patterned {
+    background: url('/pictures/pattern.svg')
+}
+
+.hidden {
+    opacity: 0;
+    height: 0px;
+    width: 0px;
+}
+
+.sticky.menu {
+    background: var(--theme-color);
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    position: sticky;
+    top: 0;
+    filter: drop-shadow(0px 0px 3px black);
+    grid-area: header;
+    z-index: 9;
+}
+
+.transparent.sticky.menu {
+    background: rgba(69,84,124,0.7);
+}
+
+.sticky.menu .header {
+    padding: 1em;
+    color: white;
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.sticky.menu .header .description {
+    font-weight: 100;
+    font-size: .8em;
+}
+
+.sticky.menu .entry {
+    width: auto;
+    flex-grow: 1;
+    text-align: center;
+    color: white;
+    padding: 10px;
+    text-decoration: none;
+    transition: border-bottom 200ms;
+    border-bottom: 0px solid white;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
+.sticky.menu .entry.active, .sticky.menu .entry:hover {
+    border-bottom: 3px solid white;
+}
+
+.button {
+    cursor: pointer;
+    font-size: .9em;
+    background-color: var(--theme-color);
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    color: white;
+    display: inline-flex;
+    align-items: baseline;
+    filter: drop-shadow(0px 0px 2px var(--theme-color));
+    text-decoration: none;
+    transition: transform 200ms ease-out, filter 200ms ease-out, background 200ms ease-out;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.button.disabled {
+    background: gray !important;
+}
+
+.disabled {
+    filter: drop-shadow(0px 0px 2px gray)blur(1px) !important;
+    transform: none !important;
+    cursor: auto !important;
+}
+
+/* Colored Buttons */
+
+.button.red {
+    background: #D12F2E;
+    filter: drop-shadow(0px 0px 2px #D12F2E);
+}
+
+
+.button.red:hover {
+    filter: drop-shadow(0px 0px 3px #D12F2E);
+}
+
+.button .mi {
+    margin-right: .9em;
+}
+
+.button:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0px 0px 3px var(--theme-color));
+}
+
+.button:active {
+    transform: scale(0.95);
+    filter: none !important;
+}
+
+.global.button {
+    position: fixed;
+    right: 2em;
+    bottom: 2em;
+    filter: drop-shadow(0px 0px 3px var(--theme-color));
+    z-index: 9;
+}
+
+.global.button.left {
+    right: auto;
+    left: 2em;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.clickable, .raisable {
+    transition: transform 200ms, filter 200ms;
+}
+
+.raisable:hover {
+    transform: scale(1.05);
+}
+
+.clickable.white:hover {
+    filter: drop-shadow(0px 0px 3px white);
+}
+
+.raisable:active {
+    transform: scale(0.95);
+    filter: none;
+}
+
+.raisable:focus {
+    transform: scale(1);
+}
+
+.popup.active {
+    background-color: rgba(0,0,0,0.7);
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.popup.active .content {
+    top: 0%;
+}
+
+.popup.out {
+    transition: background-color 200ms ease-out, top 0ms 200ms;
+    z-index: 10;
+}
+
+.popup {
+    position: fixed;
+    overflow: auto;
+    left: 0;
+    top: 100%;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,0);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 200ms ease-out;
+}
+
+.small.popup .content {
+    width: auto;
+}
+
+.popup .content {
+    top: 100%;
+    position: relative;
+    max-width: 40em;
+    height: auto;
+    max-height: 100%;
+    width: 100%;
+    background: var(--white-gradient);
+    transition: top 200ms ease-out !important;
+    overflow: auto;
+}
+
+.popup .header {
+    background: transparent;
+    padding: 1em;
+    color: var(--theme-color);
+    font-weight: bold;
+    border-bottom: 2px solid var(--theme-color);
+}
+
+.popup .header .mi {
+    margin-left: 1em;
+}
+
+.popup .description {
+    padding: 1em;
+}
+
+.popup .actions {
+    position: relative;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1em;
+}
+
+input[type="text"], input[type="number"], textarea, select {
+    background: #e5e5e5;
+    padding: 5px;
+    width: 100%;
+    border: 2px solid transparent;
+    font-family: inherit;
+    transition: transform 200ms ease-out;
+}
+
+input[type="text"]:hover, textarea:hover, select:hover, input[type="number"]:hover {
+    transform: scale(1.01) !important;
+}
+
+.icon.input {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto;
+    grid-template-areas: "input icon";
+    align-items: center;
+    grid-column-gap: 1em;
+}
+
+.icon.input input {
+    grid-area: input;
+}
+
+.icon.input .mi {
+    grid-area: icon;
+    font-weight: bold;
+}
+
+textarea {
+    height: 4em;
+}
+
+.master-detail .master .items {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.master-detail .master .items .header {
+    display: flex;
+    justify-content: center;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: bold;
+}
+
+.master-detail .master .items .item {
+    background: var(--light-white-gradient);
+    margin-bottom: 2px;
+    padding: 10px;
+    padding-left: 1em;
+    cursor: pointer;
+    text-decoration: none;
+    color: black;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto;
+    grid-template-areas: "icon content more";
+    grid-column-gap: 1em;
+}
+
+.master-detail .master .items .item.active {
+    background: var(--theme-color);
+    color: white;
+}
+
+.master-detail .master .items .active.item .mi {
+    color: white;
+}
+
+.master-detail .master .items .item .mi {
+    grid-area: icon;
+    align-self: center;
+    color: var(--theme-color);
+}
+
+.master-detail .master .items .item .content {
+    grid-area: content;
+}
+
+.master-detail .master .items .item .more-options {
+    grid-area: more;
+    align-self: center;
+    text-decoration: none;
+    color: black;
+}
+
+.master-detail .master .items .item .content .description {
+    font-size: 0.8em;
+    color: darkgray;
+    text-overflow: ellipsis;
+    line-height: 1.5em;
+    max-height: 1.5em;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+.master-detail .detail .content {
+    background: var(--white-gradient);
+    padding: 1em;
+    overflow: auto;
+}
+
+.master-detail .detail .header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: var(--theme-color);
+    font-weight: bold;
+    font-size: 1.3em;
+    margin-bottom: 1em;
+}
+
+.master-detail .detail .header .text {
+    display: inline-block;
+}
+
+.header .mi {
+    display: inline-block;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+.header .mi.right {
+    float: right;
+    margin-right: 0em;
+}
+
+.taskdetail .description {
+    font-size: 1em;
+    color: #404040;
+    font-weight: normal;
+}
+
+.taskdetail .informations {
+    margin-top: 2em;
+}
+
+.informations .information .mi {
+    color: var(--theme-color);
+    margin-right: 1em;
+    grid-area: icon;
+    align-self: center;
+}
+
+.informations .information {
+    padding-bottom: 0.5em;
+    padding-top: 0.5em;
+    border-bottom: 1px solid rgba(0,0,0,.2);
+    display: grid;
+    align-content: center;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto;
+    grid-template-areas: "icon value description";
+}
+
+.information .value {
+    grid-area: value;
+    align-self: center;
+}
+
+.informations .information:last-child {
+    border-bottom: none;
+}
+
+.informations .information:first-child {
+    padding-top: 0em;
+}
+
+.informations .information .description {
+    padding: 0em;
+    grid-area: description;
+    align-self: center;
+    font-weight: lighter;
+}
+
+@media only screen and (min-width: 40em) {
+    .master-detail {
+        box-sizing: border-box;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        grid-template-rows: 1fr;
+        min-width: 40em;
+        max-width: 70em;
+        grid-template-areas: "master detail";
+        grid-column-gap: 1em;
+        grid-area: content;
+        justify-self: center;
+        max-height: 100%;
+        margin-left: 1em;
+        margin-right: 1em;
+        filter: var(--light-shadow);
+    }
+
+    body {
+        overflow: hidden;
+    }
+
+    #app {
+        height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas: "header" "content";
+    }
+
+    .master {
+        grid-area: master;
+        overflow: auto;
+    }
+
+    .detail {
+        grid-area: detail;
+        overflow: auto;
+    }
+
+    .master-detail .detail .content {
+        overflow: hidden !important;
+        margin-top: 1em;
+        margin-bottom: 1em;
+    }
+
+    .master-detail .detail .content .header .mi {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 40em) {
+    .master-detail .detail .content {
+        position: fixed;
+        top: 0;
+        left: 100%;
+        height: 100%;
+        width: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        transition: left 200ms ease-out;
+        box-sizing: border-box;
+        z-index: 10;
+        filter: none;
+    }
+
+    .master-detail .master {
+        filter: var(--light-shadow);
+    }
+
+    .master-detail .detail .active.content {
+        left: 0;
+        z-index: 10;
+        /* filter: drop-shadow(-20em 0px 30px rgba(0,0,0,0.7)); */
+    }
+
+    .tasks {
+        margin-bottom: 5em;
+    }
+}
