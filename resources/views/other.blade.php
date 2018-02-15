@@ -46,6 +46,13 @@
                         <div class="description">Verwalte deine Bereiche</div>
                     </div>
                 @endcomponent
+                @component('components.master', ['id' => 'other'])
+                    <i class="mi mi-asterisk"></i>
+                    <div class="content">
+                        <div class="title">Sonstiges</div>
+                        <div class="description">Alle Daten löschen und mehr</div>
+                    </div>
+                @endcomponent
             </div>
         </div>
         <div class="detail">
@@ -60,22 +67,22 @@
                 @endcomponent
                 @component('components.detail', ['id' => 'account'])
                     @slot('title')
-                        @if (Auth::check())
+                        <div v-if="account.isLoggedIn">
                             Mein Konto
-                        @else
+                        </div>
+                        <div v-if="!account.isLoggedIn">
                             Anmelden
-                        @endif
+                        </div>
                     @endslot
 
-                    @if (Auth::check())
-                        Du bist angemeldet!
-                    @else
+                    <div v-if="account.isLoggedIn">
+                        Du bist bei TodoSync als <div class="sub header inline">@{{account.user.name}}</div> angemeldet.<br><br>
+                        <div class="red button" @click="logoutClick">Abmelden</div>
+                    </div>
+                    <div v-if="!account.isLoggedIn">
                         Du kannst dich anmelden, um deine Daten zu synchronisieren.<br><br>
-                        <a href="/login" class="button">Jetzt anmelden!</a><br><br><br>
-
-                        Du kannst ein neues Konto anlegen und deine Daten auf dem Server sichern<br><br>
-                        <a href="/register" class="button">Registrieren</a>
-                    @endif
+                        <a href="/oauth/authorize?client_id=3&redirect_uri=https://asoziales-netzwerk.net/callback&response_type=code&scope=" class="button">Jetzt anmelden!</a>
+                    </div>
 
                 @endcomponent
                 @component('components.detail', ['id' => 'projects'])
@@ -118,6 +125,16 @@
                         <input type="text" placeholder="Neuen Bereich eingeben..." v-model="new_workspace.cache.name" v-on:keyup.enter="addWorkspaceClick">
                         <i class="mi mi-add blue raisable clickable" @click="addWorkspaceClick" :class="{disabled: !elementValid(new_workspace.cache)}"></i>
                     </div>
+
+                @endcomponent
+                @component('components.detail', ['id' => 'other'])
+                    @slot('title')
+                        Sonstiges
+                    @endslot
+                    
+                    <div class="sub header">Alle Daten löschen</div>
+                    Du kannst alle lokal gespeicherten Daten löschen. Das wird dich auch bei TodoSync abmelden.<br><br>
+                    <div @click="deleteAllClick" class="button">Alle Daten löschen</div>
 
                 @endcomponent
             </div>

@@ -14,7 +14,7 @@ fadeout = function(element) {
 
 //This is the service worker with the Cache-first network
 
-//Add this below content to your HTML page, or add the js file to your page at the very top to register sercie worker
+//Add this below content to your HTML page, or add the js file to your page at the very top to register service worker
 // if (navigator.serviceWorker.controller) {
 //     console.log('[PWA Builder] active service worker found, no need to register')
 //   } else {
@@ -27,64 +27,215 @@ fadeout = function(element) {
 //     });
 //   }
 
+navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+     registration.unregister()
+   } })
+
+accountManager = {
+    isLoggedIn: false,
+    onchange: undefined,
+    onLogin: undefined,
+    user: {
+        name: null,
+        email: null,
+    },
+    changed: function changed() {
+        this.onchange ? this.onchange() : null
+    },
+    loggedIn() {
+        this.onLogin ? this.onLogin() : null
+    },
+    initialize: function initialize() {
+        var self = this
+        localforage.getItem('__access_token').then(function(value) {
+            if(value != null) {
+                $.ajaxSetup({
+                    headers: {
+                        'Authorization': 'Bearer ' + value,
+                        'Accept': 'application/json'
+                    }
+                })
+                $.get('/api/user').done(function(data) {
+                    self.isLoggedIn = true
+                    self.user.name = data.name
+                    self.user.email = data.email
+                    self.loggedIn()
+                    self.changed()
+                })
+
+            } else {
+                self.isLoggedIn = false
+                self.changed()
+            }
+        })
+    }
+}
+
 storageManager = {
-    cacheIds: [],
-    queue: [],
+    all_tables: [
+        'tasks',
+        'projects',
+        'workspaces'
+    ],
+
     add: function add(table, item, callback = function() {}) {
         var self = this
-
-        this.getFreeId(table, function(id, doneWithId) {
-            item.id = id
-            localforage.setItem(self.getKey(table, item.id), item).then(function() {
-                self.onchange ? self.onchange() : null
-                doneWithId()
+        if(accountManager.isLoggedIn) {
+            $.post('/api/' + table, {item: item}).done(function(data) {
+                self.addLocal(table, data, function() {
+                    self.pullFromServer(table)
+                    callback()
+                })
+            }).fail(function() {
+                self.networkError()
+            })
+        } else {
+            self.addLocal(table, item, callback)
+        }
+    },
+    addLocal: function addLocal(table, item, callback = function() {}) {
+        var self = this
+        localforage.getItem(table).then(function(value) {
+            if(value == null) {
+                value = []
+            }
+            if(!item.id) {
+                item.id = self.getFreeId(value)
+            }
+            value.push(item)
+            localforage.setItem(table, value).then(function() {
+                self.change()
                 callback()
             })
         })
     },
     remove: function remove(table, id, callback = function() {}) {
         var self = this
-
-        localforage.removeItem(this.getKey(table, id)).then(function() {
-            self.onchange ? self.onchange() : null
-            callback()
+        if(accountManager.isLoggedIn) {
+            $.ajax({
+                method: 'DELETE',
+                url: '/api/' + table + '/' + id
+            }).done(function() {
+                self.removeLocal(table, id, function() {
+                    self.pullFromServer(table)
+                    callback()
+                })
+            }).fail(function() {
+                self.networkError()
+            })
+        } else {
+            self.removeLocal()
+        }
+    },
+    removeLocal: function removeLocal(table, id, callback = function() {}) {
+        var self = this
+        localforage.getItem(table).then(function(value) {
+            if(value == null) {
+                value = []
+            }
+            var element = self.getWithId(value, id)
+            element ? value.splice(value.indexOf(element),1) : console.log('Item not found')
+            localforage.setItem(table, value).then(function() {
+                self.onchange ? self.onchange() : null
+                callback()
+            })
         })
     },
     update: function update(table, updated, callback = function() {}) {
         var self = this
-
-        localforage.setItem(this.getKey(table, updated.id), updated).then(function() {
-            self.onchange ? self.onchange() : null
-            callback()
+        if(accountManager.isLoggedIn) {
+            $.ajax({
+                method: 'PUT',
+                url: '/api/' + table + '/' + updated.id,
+                data: {
+                    item: updated,
+                }
+            }).done(function() {
+                self.updateLocal(table, updated, function() {
+                    self.pullFromServer(table)
+                    callback()
+                })
+            }).fail(function() {
+                self.networkError()
+            })
+        } else {
+            self.updateLocal()
+        }
+    },
+    updateLocal: function update(table, updated, callback = function() {}) {
+        var self = this
+        localforage.getItem(table).then(function(value) {
+            if(value == null) {
+                value = []
+            }
+            value[value.indexOf(self.getWithId(value, updated.id))] = updated
+            localforage.setItem(table, value).then(function() {
+                self.onchange ? self.onchange() : null
+                callback()
+            })
         })
     },
     get: function get(table, id, callback = function() {}) {
         var self = this
-
-        if(typeof(id) == 'function') {
-            localforage.keys().then(function(keys) {
-                var keys = keys.filter(function(element) {return element.split('#')[0] == table})
-                self.getAll(keys, function(items) {
-                    id(items)
+        localforage.getItem(table).then(function(value) {
+            if(value == null) {
+                value = []
+            }
+            if(typeof(id) == 'function') {
+                id(value)
+            } else {
+                callback(self.getWithId(value, id))
+            }
+        })  
+    },
+    pullFromServer: function pullFromServer(table) {
+        var self = this
+        if(accountManager.isLoggedIn) {
+            $.get('/api/' + table).done(function(list) {
+                console.log('Pulled ' + table + ' from Server')
+                localforage.setItem(table, list).then(function() {
+                    self.change()
                 })
+            }).fail(function() {
+                self.networkError()
             })
         } else {
-            localforage.getItem(this.getKey(table, id)).then(function(value) {
-                callback(value)
-            })
+            console.log('Not logged in -> Not pulling anything from server')
         }
-
-        // localforage.getItem(table + id).then(function(value) {
-        //     if(value == null) {
-        //         value = []
-        //     }
-        //     if(typeof(id) == 'function') {
-        //         id(value)
-        //     } else {
-        //         callback(self.getWithId(value, id))
-        //     }
-        // })  
     },
+    pullAllFromServer: function pullAllFromServer() {
+        for(tablename in this.all_tables) {
+            this.pullFromServer(this.all_tables[tablename])
+        }
+    },
+    
+    // Helper
+    getWithId: function filterById(array, id) {
+        return array.filter(function(element) { return element.id === id })[0]
+    },
+    getFreeId: function getFreeId(array) {
+        var id = 0
+        while(this.getWithId(array, id)) {
+            id++
+        }
+        return id
+    },
+
+    // Events
+    onchange: undefined,
+    onNetworkError: undefined,
+
+    // Event Fire Functions
+    networkError: function networkError() {
+        this.onNetworkError ? this.onNetworkError() : null
+    },
+    change: function change() {
+        this.onchange ? this.onchange() : null
+    },
+
+    cacheIds: [],
+    queue: [],
 
     addToQueue: function addToQueue(tablename, item) {
         this.queue.push({tablename: tablename, item: item})
@@ -100,48 +251,6 @@ storageManager = {
             callback()
         }
     },
-    
-    // Helper
-    getWithId: function filterById(array, id) {
-        return array.filter(function(element) { return element.id === id })[0]
-    },
-    getFreeId: function getFreeId(tablename, callback) {
-        var self = this
-        this.get(tablename, function(all) {
-            var id = 0
-            while(self.getWithId(all, id) && self.cacheIds.indexOf(id) < 0) {
-                id++
-            }
-            self.cacheIds.push(id)
-            callback(id, function() {
-                self.cacheIds.splice(self.cacheIds.indexOf(id), 1)
-            })
-        })
-
-        // var id = 0
-        // while(this.get(tablename)) {
-        //     id++
-        // }
-        // return id
-    },
-    getKey: function getKey(tablename, id) {
-        return tablename + '#' + id
-    },
-    getAll(keys, callback, items = []) {
-        var self = this
-        if(keys.length > 0) {
-            key = keys.shift()
-            localforage.getItem(key).then(function(value) {
-                items.push(value)
-                self.getAll(keys, callback, items)
-            })
-        } else {
-            callback(items)
-        }
-    },
-
-    // Events
-    onchange: undefined
 }
 
 var prepareFirstStart = function() {
@@ -197,17 +306,22 @@ var prepareFirstStart = function() {
     })
 }
 
+accountManager.onLogin = function() {
+    storageManager.pullAllFromServer()
+}
+accountManager.initialize();
+
 localforage.getItem('__initialized').then(function(value) {
     if(value != true) {
         prepareFirstStart()
     }
 })
 
-Task = Backbone.Model.extend()
-Tasks = Backbone.Collection.extend({
-    model: Task,
-    url: '/api/tasks'
-})
+// Task = Backbone.Model.extend()
+// Tasks = Backbone.Collection.extend({
+//     model: Task,
+//     url: '/api/tasks'
+// })
 
-var tasks = new Tasks();
-tasks.fetch()
+// var tasks = new Tasks();
+// tasks.fetch()

@@ -2,6 +2,7 @@ $(document).ready(function() {
     app = new Vue({
         el: '#app',
         data: {
+            account: accountManager,
             database: {
                 initialized: false,
             },
@@ -56,6 +57,12 @@ $(document).ready(function() {
             deleteWorkspaceClick(id) {
                 this.deleteElement('workspaces', id)
             },
+            deleteAllClick() {
+                this.deleteAll();
+            },
+            logoutClick() {
+                this.logoutUser()
+            },
 
             // UI Model
             closeTaskDetail() {
@@ -63,6 +70,9 @@ $(document).ready(function() {
             },
             elementValid(element) {
                 return element.name != null && element.name.length > 0 
+            },
+            deleteAll() {
+                localforage.clear()
             },
 
             // Database Model
@@ -74,6 +84,9 @@ $(document).ready(function() {
             },
             deleteElement(tablename, id) {
                 storageManager.remove(tablename, id)
+            },
+            logoutUser() {
+                this.deleteAll()
             },
 
             // Database Events
@@ -90,7 +103,7 @@ $(document).ready(function() {
             }
         },
         computed: {
-            
+
         }
     })
 

@@ -7,5 +7,4 @@ $(document).ready(function() {
             app.backFromPopupClick ? app.backFromPopupClick() : null
         }
     })
-
 })

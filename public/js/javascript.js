@@ -25,8 +25,8 @@ $(document).ready(function() {
                 ]
             },
             task_template: {
-                title: null,
-                description: null,
+                title: '',
+                description: '',
                 workspace: 0,
                 energy: 0,
                 time: 0,
@@ -34,8 +34,8 @@ $(document).ready(function() {
                 state: 0,
             },
             new_task_cache: {
-                title: null,
-                description: null,
+                title: '',
+                description: '',
                 workspace: 0,
                 energy: 0,
                 time: 0,
@@ -146,6 +146,9 @@ $(document).ready(function() {
             
             // Database actions (model)
             addTask(task) {
+                if(task.description == '' || task.description == null) {
+                    task.description = 'Keine Beschreibung'
+                }
                 storageManager.add('tasks', task)
             },
             deleteTask(id) {

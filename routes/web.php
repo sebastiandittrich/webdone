@@ -27,12 +27,10 @@ Route::get('/dashboard', 'HomeController@dashboard');
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::get('/api/users/{user}', function(User $user) {
-    return $user;
+Route::get('/callback', function (Request $request) {
+    return view('callback', ['code' => request('code')]);
 });
 
-Route::get('/api/tasks', function () {
-    return auth()->user()->tasks;
+Route::get('/migrate', function() {
+    return view('migrate');
 });
-
-Route::get('/api/')

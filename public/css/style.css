@@ -114,6 +114,7 @@ body.patterned {
 /* Colored Buttons */
 
 .button.red {
+    color: white !important;
     background: #D12F2E;
     filter: drop-shadow(0px 0px 2px #D12F2E);
 }
@@ -297,6 +298,22 @@ textarea {
     font-weight: bold;
 }
 
+.master-detail .detail .sub.header, .sub.header {
+    display: flex;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: bold;
+    color: black;
+    font-size: 1em;
+    filter: var(--light-shadow);
+}
+
+.master-detail .detail .sub.header.inline, .sub.header.inline {
+    display: inline-flex;
+}
+
 .master-detail .master .items .item {
     background: var(--light-white-gradient);
     margin-bottom: 2px;
@@ -425,6 +442,36 @@ textarea {
     grid-area: description;
     align-self: center;
     font-weight: lighter;
+}
+
+.cards {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 50em;
+    justify-self: center;
+}
+
+.card {
+    background: var(--light-white-gradient);
+    margin: 1em;
+    height: auto;
+    padding: 1em;
+    filter: var(--light-shadow);
+}
+
+.card.highlighted {
+    background: var(--theme-color);
+    color: white;
+}
+
+.card.highlighted .sub.header {
+    color: white;
+    filter: drop-shadow(0px 0px 2px rgba(255,255,255, 0.4));
+}
+
+.card .sub.header {
+    margin-top: 0em;
 }
 
 @media only screen and (min-width: 40em) {
