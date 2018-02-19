@@ -6,9 +6,31 @@
 
 @section('page')
 
-<div class="sticky menu">
-    <a href="/" class="active entry">Do</a>
-    <a href="/other" class="entry">Other</a>
+<div class="menu">
+    <div class="header">
+        <div class="searchbar">
+            <i class="mi mi-search"></i>
+            <input type="text" placeholder="Suche nach etwas...">
+        </div>
+        <a href="/other"><i class="mi mi-settings"></i></a>
+        <i class="mi" :class="{'mi-spin': syncIconSpinning, 'mi-sync': !database.syncerror, 'mi-syncerror': database.syncerror}"></i>
+    </div>
+    <div class="sections">
+        <div class="do entry"> <i class="mi mi-lightbulb"></i> Do</div>
+        <div class="today entry"><i class="mi mi-gototoday"></i>Heute</div>
+        <div class="active all entry"><i class="mi mi-alignleft"></i>Alle</div>
+    </div>
+</div>
+
+<div class="filtertoggle" @click="toggleFilterClick">
+    <i class="mi mi-filter"></i>
+    Filter
+    <i class="mi" :class="{'mi-chevrondown4legacy': !showFilter, 'mi-chevronup4legacy': showFilter}"></i>
+</div>
+
+<div class="tags" v-show="showFilter">
+    <div class="tag">Bereiche</div>
+    <div class="active tag">Projekte</div>
 </div>
 
 <a href="#popup" class="global button add" @click="newTaskClick"><i class="mi mi-add"></i>Neu</a>
@@ -77,8 +99,8 @@
     </div>
     <div class="detail">
         <div :class="{'active': taskdetail.active}" class="taskdetail content" id="taskdetail">
-            <div class="header">
-                <i @click="taskdetailBackClicked" id="taskdetailbackbutton" class="mi mi-chevronleftsmlegacy"></i><div class="text">@{{activeTask.title}}</div>
+            <div @click="taskdetailBackClicked" class="header">
+                <i id="taskdetailbackbutton" class="mi mi-chevronleftsmlegacy"></i><div class="text">@{{activeTask.title}}</div>
             </div>
             <div class="description">
                 @{{activeTask.description}}

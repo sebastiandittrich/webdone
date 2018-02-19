@@ -21,6 +21,10 @@ Route::get('/other', function () {
     return view('other');
 });
 
+Route::get('/url', function() {
+    echo url('/');
+});
+
 Auth::routes();
 
 Route::get('/dashboard', 'HomeController@dashboard');

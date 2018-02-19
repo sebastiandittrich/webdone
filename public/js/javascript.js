@@ -5,6 +5,8 @@ $(document).ready(function() {
         data: {
             database: {
                 initialized: false,
+                syncspending: 0,
+                syncerror: false,
             },
             taskdetail: {
                 taskId: null,
@@ -13,6 +15,7 @@ $(document).ready(function() {
             taskmoreoptions: {
                 taskId: 0,
             },
+            showFilter: false,
             value_sets: {
                 energies: [
                     'Wenig',
@@ -67,7 +70,7 @@ $(document).ready(function() {
                 this.taskdetail.active = true;
             },
             taskdetailBackClicked() {
-                this.closeTaskDetail()
+                window.history.back()
             },
             taskdetailBrowserBackClicked() {
                 this.closeTaskDetail()
@@ -92,6 +95,9 @@ $(document).ready(function() {
                 this.closeNewTask()
                 this.closeTaskMoreOptionsClick()
             },
+            toggleFilterClick() {
+                this.toggleFilter()
+            },
             
             // UI Model
             closeNewTask() {
@@ -112,6 +118,9 @@ $(document).ready(function() {
             },
             closeTaskMoreOptions() {
                 fadeout('#moreoptionspopup')
+            },
+            toggleFilter() {
+                this.showFilter = !this.showFilter
             },
 
             // Helper functions
@@ -149,16 +158,29 @@ $(document).ready(function() {
                 if(task.description == '' || task.description == null) {
                     task.description = 'Keine Beschreibung'
                 }
-                storageManager.add('tasks', task)
+                var self = this
+                storageManager.add('tasks', task, function() {
+                    self.database.loading = false
+                })
             },
             deleteTask(id) {
-                storageManager.remove('tasks', id)
+                var self = this
+                storageManager.remove('tasks', id, function() {
+                    self.database.loading = false
+                })
             },
             updateTask(task) {
-                storageManager.update('tasks', task)
+                var self = this
+                storageManager.update('tasks', task, function() {
+                    self.database.loading = false
+                })
             },
             get(tablename, id) {
-               return this[tablename].filter(function(element) {return element.id == id})[0] || {}
+                var self = this
+                return this[tablename].filter(function(element) {return element.id == id})[0] || {}
+            },
+            syncError() {
+                this.database.syncerror = true;
             }
         },
         computed: {
@@ -191,16 +213,31 @@ $(document).ready(function() {
                 self = this
                 return this.tasks.filter(function(element) { return element.id == self.taskdetail.taskId})[0] || this.task_template
             },
+            syncIconSpinning() {
+                return this.database.syncspending > 0
+            }
         }
     })
 
     app.DBChange()
-    storageManager.onchange = function() {
+    storageManager.on('change', function() {
         app.DBChange()
-    }
+    })
+
+    storageManager.on('syncstart', function() {
+        app.database.syncspending++
+    })
+
+    storageManager.on('syncend', function() {
+        app.database.syncspending = app.database.syncspending -1
+    })
+
+    storageManager.on('syncerror', function() {
+        app.syncError()
+    })
 
     var hammertime = new Hammer(document.getElementsByClassName('detail')[0].getElementsByClassName('content')[0])
     hammertime.on('swiperight', function(ev) {
-        app.closeTaskDetail();
+        window.history.back();
     })
 })

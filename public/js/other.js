@@ -108,9 +108,9 @@ $(document).ready(function() {
     })
 
     app.DBChange()
-    storageManager.onchange = function() {
+    storageManager.on('change', function() {
         app.DBChange()
-    }
+    })
 
     var hammertime = new Hammer(document.getElementsByClassName('detail')[0].getElementsByClassName('content')[0])
     hammertime.on('swiperight', function(ev) {

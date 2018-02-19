@@ -7,8 +7,10 @@
 @section('page')
 
     <div class="sticky menu">
-        <a href="/" class="entry">Do</a>
-        <a href="/other" class="active entry">Other</a>
+        <div class="text header">
+            <a href="/"><i class="mi mi-arrowhtmllegacy"></i></a>
+            Einstellungen
+        </div>
     </div>
 
     <div class="small popup" :class="{active: !database.initialized}">

@@ -79,16 +79,23 @@ storageManager = {
         'workspaces'
     ],
 
+    receiving: false,
+
     add: function add(table, item, callback = function() {}) {
         var self = this
         if(accountManager.isLoggedIn) {
+            self.trigger('syncstart')
             $.post('/api/' + table, {item: item}).done(function(data) {
                 self.addLocal(table, data, function() {
                     self.pullFromServer(table)
                     callback()
                 })
+            }).done(function() {
+                self.trigger('syncend')
             }).fail(function() {
-                self.networkError()
+                self.trigger('syncerror')
+                self.trigger('syncend')
+                self.trigger('change')
             })
         } else {
             self.addLocal(table, item, callback)
@@ -105,7 +112,7 @@ storageManager = {
             }
             value.push(item)
             localforage.setItem(table, value).then(function() {
-                self.change()
+                self.trigger('change')
                 callback()
             })
         })
@@ -113,19 +120,23 @@ storageManager = {
     remove: function remove(table, id, callback = function() {}) {
         var self = this
         if(accountManager.isLoggedIn) {
+            self.trigger('syncstart')
             $.ajax({
                 method: 'DELETE',
                 url: '/api/' + table + '/' + id
             }).done(function() {
+                self.trigger('syncend')
                 self.removeLocal(table, id, function() {
                     self.pullFromServer(table)
                     callback()
                 })
             }).fail(function() {
-                self.networkError()
+                self.trigger('syncerror')
+                self.trigger('syncend')
+                self.trigger('change')
             })
         } else {
-            self.removeLocal()
+            self.removeLocal(table, id, callback)
         }
     },
     removeLocal: function removeLocal(table, id, callback = function() {}) {
@@ -137,7 +148,7 @@ storageManager = {
             var element = self.getWithId(value, id)
             element ? value.splice(value.indexOf(element),1) : console.log('Item not found')
             localforage.setItem(table, value).then(function() {
-                self.onchange ? self.onchange() : null
+                self.trigger('change')
                 callback()
             })
         })
@@ -145,6 +156,7 @@ storageManager = {
     update: function update(table, updated, callback = function() {}) {
         var self = this
         if(accountManager.isLoggedIn) {
+            self.trigger('syncstart')
             $.ajax({
                 method: 'PUT',
                 url: '/api/' + table + '/' + updated.id,
@@ -152,15 +164,18 @@ storageManager = {
                     item: updated,
                 }
             }).done(function() {
+                self.trigger('syncend')
                 self.updateLocal(table, updated, function() {
                     self.pullFromServer(table)
                     callback()
                 })
             }).fail(function() {
-                self.networkError()
+                self.trigger('syncerror')
+                self.trigger('syncend')
+                self.trigger('change')
             })
         } else {
-            self.updateLocal()
+            self.updateLocal(table, updated, callback)
         }
     },
     updateLocal: function update(table, updated, callback = function() {}) {
@@ -171,7 +186,7 @@ storageManager = {
             }
             value[value.indexOf(self.getWithId(value, updated.id))] = updated
             localforage.setItem(table, value).then(function() {
-                self.onchange ? self.onchange() : null
+                self.trigger('change')
                 callback()
             })
         })
@@ -192,13 +207,16 @@ storageManager = {
     pullFromServer: function pullFromServer(table) {
         var self = this
         if(accountManager.isLoggedIn) {
+            self.trigger('syncstart')
             $.get('/api/' + table).done(function(list) {
                 console.log('Pulled ' + table + ' from Server')
                 localforage.setItem(table, list).then(function() {
-                    self.change()
+                    self.trigger('change')
+                    self.trigger('syncend')
                 })
             }).fail(function() {
-                self.networkError()
+                self.trigger('syncerror')
+                self.trigger('syncend')
             })
         } else {
             console.log('Not logged in -> Not pulling anything from server')
@@ -222,17 +240,22 @@ storageManager = {
         return id
     },
 
-    // Events
-    onchange: undefined,
-    onNetworkError: undefined,
+    on(name, callback) {
+        if(!this.events[name]) {
+            this.events[name] = []
+        }
+        this.events[name].push(callback)
+    },
 
-    // Event Fire Functions
-    networkError: function networkError() {
-        this.onNetworkError ? this.onNetworkError() : null
+    trigger(name) {
+        if(this.events[name]) {
+            for(func of this.events[name]) {
+                func()
+            }
+        }
     },
-    change: function change() {
-        this.onchange ? this.onchange() : null
-    },
+
+    events: {},
 
     cacheIds: [],
     queue: [],

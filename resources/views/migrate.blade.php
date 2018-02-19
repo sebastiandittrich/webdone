@@ -7,7 +7,7 @@
 @section('page')
 
     <div class="sticky menu">
-        <div class="header">
+        <div class="text header">
             Migration
             <div class="description">Umgang mit bestehenden Daten</div>
         </div>
